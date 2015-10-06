@@ -1,2 +1,3 @@
-exec p1 prioridade 1
-exec p2 prioridade 2
+exec p1 prioridade 3
+exec p2 prioridade 1
+exec p3 prioridade 2

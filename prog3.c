@@ -9,9 +9,10 @@
 
 int main()
 {
-	while(1)
+	int i;
+	for(int i = 0; i < 10; i++)
 	{
-		printf("P1 rodando\n");
+		printf("P3 rodando %d\n", i);
 		sleep(1);
 	}
 }

@@ -9,9 +9,13 @@
 
 int main()
 {
+	int 	i = 0;
 	while(1)
 	{
-		printf("P1 rodando\n");
+		printf("P2 rodando\n");
 		sleep(1);
+		i++;
+		if(i == 5)
+			return 1;
 	}
 }

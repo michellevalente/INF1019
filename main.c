@@ -1,6 +1,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "escalonadores.h"
 #define MAX_PROG 10 
 int main()
 {
@@ -19,9 +21,8 @@ int main()
 	while(fscanf(arq, "%s %s %s %d", ex, prog, p, &pr) != EOF)
 	{
 
-		programa[NumProg] = prog;
+		strcpy(programa[NumProg], prog);
 		prioridade[NumProg] = pr;
-		printf("Programa: %s, prioridade: %d\n", programa[NumProg], prioridade[i]);
 		NumProg++;
 
 	}
@@ -31,6 +32,8 @@ int main()
 		printf("Programa: %s, prioridade: %d\n", programa[i], prioridade[i]);
 
 	}
-	execve("p1", NULL, NULL);
+	
+	//round_robin(programa, NumProg);
+	prioridades(programa, prioridade, NumProg);
 	return 0;
 }
