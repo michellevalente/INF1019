@@ -18,6 +18,7 @@ int prog_io[MAX_PROG];
 int pid_atual;
 int index_prog_io, prioridade_prog_io;
 
+// Funcao para lidar com ctrl+c
 void intHandler(int dummy) {
     printf("\nLimpando memoria compartilhada! \n");
     shmdt (prioridades_prontos);
@@ -29,6 +30,38 @@ void intHandler(int dummy) {
 
 }
 
+// Testa se todos programas ja terminaram
+int fim_teste(int finished[],int n)
+{
+	int i;
+	for(i = 0; i < n ; i++)
+	{
+		if(finished[i] == 0)
+			return 0;
+	}
+
+	return 1;
+}
+
+// Testa se tem apenas um unico programa rodando
+int unico_programa(int finished[],int n)
+{
+	int i;
+	int progs =0;
+	for(i = 0; i < n ; i++)
+	{
+		if(finished[i] == 0)
+			progs++;
+
+		if(progs > 1)
+			return 0;
+	}	
+
+	return 1;
+
+}
+
+// Lida com I/o para escalonador round robin
 void handler_io_r(int dummy)
 {
 	int n_pid = fork();
@@ -47,7 +80,7 @@ void handler_io_r(int dummy)
 		return;
 }
 
-
+// Lida com I/o para escalonador de prioridades
 void handler_io_p(int dummy)
 {
 	int n_pid = fork();
@@ -67,9 +100,10 @@ void handler_io_p(int dummy)
 		return;
 }
 
+// Escalonador Round Robin
 void round_robin(char * programas[MAX_PROG], int n)
 {
-	int i, pid[MAX_PROG], n_pid;
+	int i, pid[MAX_PROG], n_pid, j;
 	int finished[MAX_PROG];
 	int result, status;
 	signal(SIGINT,intHandler );
@@ -94,31 +128,48 @@ void round_robin(char * programas[MAX_PROG], int n)
 
 	i = 0;
 
-
+	j = 0;
 	while(1)
 	{
-
+		if(fim_teste(finished, n) == 1)
+				return;
 		if(finished[i] == 0 && prog_io[i] == 0)
 		{
 			kill(pid[i], SIGCONT);
 			pid_atual = pid[i];
-			sleep(5);
+			sleep(1);
 			result = waitpid(pid[i], &status, WNOHANG);
 			if (result == 0) 
 			{
-			  kill(pid[i], SIGSTOP);
+			  j++;
+			  if(j == 5)
+			  {
+
+			  	if(unico_programa(finished,n) == 0)
+			  	{
+			  		kill(pid[i], SIGSTOP);
+			  		i++;
+			  	}
+			  	j = 0;
+
+			  }
+			  
 			} 
 			else 
 			{
+			  printf("Programa %d terminou\n", i);
 			  finished[i] =1;
+			  j = 0;
+			  i++;
 			}
 		}
-		i++;
+		
 		if(i == n)
 			i = 0;
 	}
 }
 
+// Retorna index do programa com menor prioridade
 int menor_prioridade(int prioridades[MAX_PROG], int n)
 {
 	int min, index, i;
@@ -136,6 +187,8 @@ int menor_prioridade(int prioridades[MAX_PROG], int n)
 	return index;
 }
 
+
+// Escalonador de prioridades
 void prioridades(char * programas[MAX_PROG], int prioridades[MAX_PROG], int n)
 {
 	int i, pid[MAX_PROG], n_pid, j, min;
@@ -199,6 +252,9 @@ void prioridades(char * programas[MAX_PROG], int prioridades[MAX_PROG], int n)
 
 			i = menor_prioridade(prioridades_prontos, n);
 			if(i == INF)
+				return;
+
+			if(fim_teste( finished,n) == 1)
 				return;
 
 			if(finished[i] == 0)
