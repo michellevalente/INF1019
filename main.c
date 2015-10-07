@@ -12,7 +12,7 @@ int main()
 	char * programa[MAX_PROG];
 	int prioridade[MAX_PROG];
 
-	arq = fopen("programas.txt", "r");
+	arq = fopen("entrada.txt", "r");
 
 	for(i = 0 ; i < MAX_PROG; i++)
 	{

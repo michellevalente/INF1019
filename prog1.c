@@ -9,9 +9,12 @@
 
 int main()
 {
-	while(1)
+	int i;
+	//signal(SIGINT, intHandler);
+	for(i = 0; i < 10; i++)
 	{
 		printf("P1 rodando\n");
 		sleep(1);
 	}
+
 }
