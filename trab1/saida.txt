@@ -1,0 +1,27 @@
+Programa: p1
+Programa: p2
+Programa: p4
+P1 rodando 0
+P1 rodando 1
+P1 rodando 2
+P1 rodando 3
+P2 rodando 0
+P2 rodando 1
+P2 rodando 2
+P2 rodando 3
+P4 rodando 0
+P4 rodando 1
+P4 rodando 2
+P4 rodando 3
+P4 rodando 4
+P1 rodando 4
+P1 rodando 5
+P1 rodando 6
+Terminou  P1
+P2 rodando 4
+P2 rodando 5
+P2 rodando 6
+P2 rodando 7
+Terminou  P2
+P4 rodando 5
+Terminou  P3
