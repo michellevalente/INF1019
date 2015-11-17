@@ -1,0 +1,17 @@
+4
+Processo #1 – 5Mb
+3
+exec 20
+io 50
+exec 50
+Processo #2 – 4Mb
+1
+exec 10
+Processo #3 – 1Mb
+1
+exec 50
+Processo #4 – 5Mb
+4
+exec 30
+io 50
+exec 10 
