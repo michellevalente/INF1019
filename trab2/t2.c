@@ -4,10 +4,11 @@
 #include <unistd.h>
 #define IO 0
 #define EXEC 1
-#define TAM_MEMORIA 4
+#define TAM_MEMORIA 5
 #define MAX_PROC 100
 
 int alocacao = 0;
+int ultima_alocacao = 0;
 int memoria[] ={8, 4, 2,1,1}; 
 int MemoriaAux[] ={0,0,0,0,0};
 int num;
@@ -55,6 +56,34 @@ int BestFit(Proc * p, int index)
     }
 	
 
+}
+
+int NextFit(Proc * p, int index)
+{  
+    int i;
+
+	for (i = ultima_alocacao; i < TAM_MEMORIA; i++) {         
+        if (memoria[i] >= p->tam && MemoriaAux[i] == 0) {
+            alocados[index] = 1;
+	    	MemoriaAux[i] = index + 1;
+	    	p->particao = i;
+	    	ultima_alocacao = i;
+	    	return 1;
+        }                       
+    }
+    for(i = 0; i < ultima_alocacao; i++)
+    {
+    	if (memoria[i] >= p->tam && MemoriaAux[i] == 0) {
+            alocados[index] = 1;
+	    	MemoriaAux[i] = index + 1;
+	    	p->particao = i;
+	    	ultima_alocacao = i;
+	    	return 1;
+        }
+    }
+	prontos_esperando[index] = 1; 
+	p->particao = -1;
+	return 0;
 }
 
 int FirstFit(Proc * p, int index)
@@ -150,6 +179,20 @@ int swap_proc(Proc ** p, int i)
 					swap = 1;
 					p[i]->particao = -1;
 					prontos_esperando[k] = 0;
+					printf("Processo %d retirado da memoria\n", i + 1);
+					printf("Processo %d inserido na memoria\n", k + 1);
+					return 1;
+				}
+			}
+			if(alocacao == 1)
+			{
+				if(NextFit(p[k], k))	
+				{
+					swap = 1;
+					p[i]->particao = -1;
+					prontos_esperando[k] = 0;
+					printf("Processo %d retirado da memoria\n", i + 1);
+					printf("Processo %d inserido na memoria\n", k + 1);
 					return 1;
 				}
 			}
@@ -160,6 +203,8 @@ int swap_proc(Proc ** p, int i)
 					swap = 1;
 					p[i]->particao = -1;
 					prontos_esperando[k] = 0;
+					printf("Processo %d retirado da memoria\n", i + 1);
+					printf("Processo %d inserido na memoria\n", k + 1);
 					return 1;
 				}
 			}
@@ -170,6 +215,8 @@ int swap_proc(Proc ** p, int i)
 					swap = 1;
 					p[i]->particao = -1;
 					prontos_esperando[k] = 0;
+					printf("Processo %d retirado da memoria\n", i + 1);
+					printf("Processo %d inserido na memoria\n", k + 1);
 					return 1;
 				}
 			}
@@ -202,10 +249,7 @@ void io(Proc ** p)
 					finalizados[i] = 1;
 					prontos_esperando[i] = 0;
 					printf("Processo %d finalizado\n", i + 1);
-					if(swap_proc(p,i))
-					{
-						printf("Processo %d retirado da memoria\n", i + 1);
-					}
+					swap_proc(p,i);
 				}
 				else if(!alocados[i])
 				{
@@ -260,14 +304,14 @@ int main(int argc, char ** argv)
 		MemoriaAux[i] = 0;
 	}
 
-
+	printf("PROCESSOS:\n");
 	for(i = 0; i < num; i++)
 	{
 
 		fscanf(arq, "%s %s %s %s", t,t,t,t);
 		tam = atoi(&t[0]);
 		fscanf(arq, "%d", &info);
-
+		printf("Processo #%d - %dMB\n", i + 1, tam);
 		Proc * p = (Proc *)malloc(sizeof(*p) + info * sizeof(*p->ex)) ;
 		p->num = i + 1;
 		if(tam < 2)
@@ -284,9 +328,15 @@ int main(int argc, char ** argv)
 		{
 			fscanf(arq, "%s %d", tipo, &tempo);
 			if(strcmp(tipo, "io"))
+			{
+				printf("Exec %d\n", tempo);
 				tp = EXEC;
+			}
 			else
+			{
+				printf("IO %d\n", tempo);
 				tp = IO;
+			}
 
 			p->ex[j][0] = tp;
 			p->ex[j][1] = tempo;
@@ -294,13 +344,16 @@ int main(int argc, char ** argv)
 		}
 		p->atual = 0;
 		processos[i] = p;
+		printf("\n");
 
 	}
-
+	sleep(1);
 	for(i= 0; i < num; i++)		
 	{
 		if(alocacao == 0)
 			FirstFit(processos[i], i);
+		if(alocacao == 1)
+			NextFit(processos[i], i);
 		else if(alocacao == 2)
 			BestFit(processos[i], i);
 		else if(alocacao == 3)
@@ -309,6 +362,8 @@ int main(int argc, char ** argv)
 
 	int relogio = 0;
 
+	//print_memoria(relogio);
+
 	while(1)
 	{
 		if(terminou())
@@ -316,8 +371,7 @@ int main(int argc, char ** argv)
 		todos_io = 1;
 		for(i = 0 ; i < num; i++)
 		{
-			if(i == 4)
-				printf("alocado[i]: %d , bloqueados[i]: %d , finalizados[i]: %d\n", alocados[i], bloqueados[i], finalizados[i]);
+			
 			if(alocados[i] && !bloqueados[i] && !finalizados[i])
 			{ 
 				todos_io = 0;
@@ -327,7 +381,7 @@ int main(int argc, char ** argv)
 				{
 					if(processos[i]->ex[processos[i]->atual][0] == EXEC)
 					{
-						printf("Processo %d em exec por %d\n", i + 1,processos[i]->ex[processos[i]->atual][1]);
+						printf("No CPU: processo %d em exec faltando %d\n", i + 1,processos[i]->ex[processos[i]->atual][1]);
 				
 						if(processos[i]->ex[processos[i]->atual][1] > 10)
 							max = 10;
@@ -348,10 +402,10 @@ int main(int argc, char ** argv)
 						}
 						else
 						{
-							if(swap_proc(processos,i))
-							{
-								prontos_esperando[i] = 1;
-							}
+							// if(swap_proc(processos,i))
+							// {
+							// 	prontos_esperando[i] = 1;
+							// }
 							break;
 						}
 
@@ -369,10 +423,7 @@ int main(int argc, char ** argv)
 						printf("Processo %d em I/O por %d\n", i + 1, processos[i]->ex[processos[i]->atual][1]);
 
 						bloqueados[i] = processos[i]->ex[j][1];
-						if(swap_proc(processos,i))
-						{
-							printf("Processo %d retirado da memoria\n", i + 1);
-						}
+						swap_proc(processos,i);
 		
 						break;
 					}
