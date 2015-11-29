@@ -1,12 +1,16 @@
-3
+4
 Processo #1 – 1MB
 3
 exec 20
-io 50
-exec 50
+io 20
+exec 30
 Processo #2 – 2MB
 1
 exec 10
 Processo #3 – 7MB
-1
+2
 exec 20
+io 10
+Processo #4 – 7MB
+1
+exec 30
